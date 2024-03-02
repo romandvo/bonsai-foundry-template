@@ -23,6 +23,7 @@ import {IRiscZeroVerifier} from "risc0/IRiscZeroVerifier.sol";
 import {OFACWallet} from "../contracts/OFACWallet.sol";
 import {Elf} from "./Elf.sol"; // auto-generated contract after running `cargo build`.
 
+
 contract OFACWalletTest is RiscZeroCheats, Test {
     OFACWallet public ofacWallet;
 
@@ -30,7 +31,8 @@ contract OFACWalletTest is RiscZeroCheats, Test {
 
     function setUp() public {
         IRiscZeroVerifier verifier = deployRiscZeroVerifier();
-        ofacWallet = new OFACWallet(verifier);
+        bytes32 sanctionedListHash = 0xe8562c50afc459571ee739a12c4a26c50a1a6aaf0fff5d9b0ea55e8454c43555;
+        ofacWallet = new OFACWallet(sanctionedListHash, verifier);
         assertEq(ofacWallet.owner(), address(this));
         uint256 amount = 1 ether;
         vm.deal(address(ofacWallet), amount);
@@ -40,11 +42,22 @@ contract OFACWalletTest is RiscZeroCheats, Test {
     function test_SendToNotSanctioned() public {
         address payable dest = payable(0x1111111111111111111111111111111111111111);
         uint256 value = 0.1 ether;
+        bytes memory fileContent = bytes(vm.toString(abi.encodePacked(vm.readFile("./sdn_mini.xml"))));
         (bytes memory journal, bytes32 post_state_digest, bytes memory seal) =
-            prove(Elf.IS_NOT_0FAC_SANCTIONED_PATH, abi.encode(dest));
+            prove(Elf.IS_NOT_0FAC_SANCTIONED_PATH, abi.encodePacked(dest, fileContent));
+    
+        address payable extractedAddress;
+        assembly {
+            // Load the first 20 bytes of the `journal` directly.
+            // Since `journal` is a dynamically-sized bytes array, it has a length prefix.
+            // The data starts at the 32 bytes offset due to this prefix.
+            // `mload(add(journal, 32))` reads the first 20 bytes after this prefix, which is the address.
+            extractedAddress := mload(add(journal, 0x20))
+        }
+
         vm.expectEmit(true, true, false, true);
         emit FundsSent(dest, value);
 
-        ofacWallet.transferFunds(abi.decode(journal, (address)), value, post_state_digest, seal);
+        ofacWallet.transferFunds(extractedAddress, value, post_state_digest, seal);
     }
 }

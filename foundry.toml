@@ -6,3 +6,4 @@ test = "tests"
 ffi = true
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
+fs_permissions = [{ access = "read", path = "./"}]

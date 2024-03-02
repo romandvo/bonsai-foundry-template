@@ -21,7 +21,7 @@ import {console2} from "forge-std/console2.sol";
 import {IRiscZeroVerifier} from "risc0/IRiscZeroVerifier.sol";
 import {ControlID, RiscZeroGroth16Verifier} from "risc0/groth16/RiscZeroGroth16Verifier.sol";
 
-import {AMLWallet} from "../contracts/AMLWallet.sol";
+import {OFACWallet} from "../contracts/OFACWallet.sol";
 
 /// @notice Deployment script for the RISC Zero starter project.
 /// @dev Use the following environment variable to control the deployment:
@@ -29,7 +29,7 @@ import {AMLWallet} from "../contracts/AMLWallet.sol";
 ///
 /// See the Foundry documentation for more information about Solidity scripts.
 /// https://book.getfoundry.sh/tutorials/solidity-scripting
-contract AMLWalletDeploy is Script {
+contract OFACWalletDeploy is Script {
     function run() external {
         uint256 deployerKey = uint256(vm.envBytes32("ETH_WALLET_PRIVATE_KEY"));
 
@@ -37,9 +37,9 @@ contract AMLWalletDeploy is Script {
 
         IRiscZeroVerifier verifier = new RiscZeroGroth16Verifier(ControlID.CONTROL_ID_0, ControlID.CONTROL_ID_1);
         console2.log("Deployed RiscZeroGroth16Verifier to", address(verifier));
-
-        AMLWallet amlWallet = new AMLWallet(verifier);
-        console2.log("Deployed AMLWallet to", address(amlWallet));
+        bytes32 sanctionedListHash = 0xe8562c50afc459571ee739a12c4a26c50a1a6aaf0fff5d9b0ea55e8454c43555;
+        OFACWallet ofacWallet = new OFACWallet(sanctionedListHash, verifier);
+        console2.log("Deployed OFACWallet to", address(ofacWallet));
 
         vm.stopBroadcast();
     }
