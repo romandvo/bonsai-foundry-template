@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::io::Read;
+use alloy_sol_types::SolValue;
 use core::Inputs;
 use core::Outputs;
 use risc0_zkvm::{
@@ -22,10 +24,27 @@ use risc0_zkvm::{
 use roxmltree::Document;
 
 fn main() {
-    let inputs: Inputs = env::read();
+    // Read the input data for this application.
+    let mut input_bytes = Vec::<u8>::new();
+    env::stdin().read_to_end(&mut input_bytes).unwrap();
+    // Decode and parse the input
+    // 42 bytes of checked_address || [42, ...] - ofac xml
+    let raw_data = <String>::abi_decode(&input_bytes, true).unwrap();
+    // Assuming the first 42 bytes are ASCII/UTF-8 encoded characters for the address
+    let checked_address = match std::str::from_utf8(&input_bytes[..42]) {
+        Ok(addr) => addr.to_string(),
+        Err(e) => panic!("Failed to convert address to string: {}", e),
+    };
+    // Convert the remainder of the input_bytes to a UTF-8 String
+    let ofac_list = match std::str::from_utf8(&input_bytes[42..]) {
+        Ok(list) => list.to_string(),
+        Err(e) => panic!("Failed to convert OFAC list to string: {}", e),
+    };
 
-    let ofac_list: String = inputs.ofac_list;
-    let checked_address: String = inputs.checked_address;
+    // let inputs: Inputs = env::read();
+    //
+    // let ofac_list: String = inputs.ofac_list;
+    // let checked_address: String = inputs.checked_address;
 
     let sha = *Impl::hash_bytes(&ofac_list.as_bytes());
 
@@ -55,10 +74,14 @@ fn main() {
         if found { break; }
     }
 
-    let proven_val = if found { true } else { false };
-    let out = Outputs {
-        is_0fac_sanctioned: proven_val,
-        ofac_list_hash: sha,
-    };
-    env::commit(&out);
+    let is_0fac_sanctioned = if found { true } else { false };
+
+    env::commit_slice(&is_0fac_sanctioned);
+    env::commit_slice(sha.as_bytes());
+
+    // let out = Outputs {
+    //     is_0fac_sanctioned: is_0fac_sanctioned,
+    //     ofac_list_hash: sha,
+    // };
+    // env::commit(&out);
 }

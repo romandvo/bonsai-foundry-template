@@ -57,25 +57,17 @@ mod tests {
         let checked_address = "0xkosher";
         println!("inputs loaded!");
 
-        let inputs = Inputs {
-            ofac_list: ofac_list.parse().unwrap(),
-            checked_address: checked_address.parse().unwrap()
-        };
+        let concatenated = format!("{}{}", checked_address, ofac_list);
+
         println!("building env...");
         let env = ExecutorEnv::builder()
-            .write(&inputs)
-            .unwrap()
-            .build()
-            .unwrap();
-
-
-        let env = ExecutorEnv::builder()
-            .write_slice(&sanctioned_address.abi_encode())
+            .write_slice(&concatenated.abi_encode())
             .build()
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
+        let session = default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
+        println!("res {}", session.journal.decode());
     }
 
     #[test]
@@ -86,24 +78,16 @@ mod tests {
         let checked_address = "0xb04E030140b30C27bcdfaafFFA98C57d80eDa7B4";
         println!("inputs loaded!");
 
-        let inputs = Inputs {
-            ofac_list: ofac_list.parse().unwrap(),
-            checked_address: checked_address.parse().unwrap()
-        };
+        let concatenated = format!("{}{}", checked_address, ofac_list);
+
         println!("building env...");
         let env = ExecutorEnv::builder()
-            .write(&inputs)
-            .unwrap()
-            .build()
-            .unwrap();
-
-
-        let env = ExecutorEnv::builder()
-            .write_slice(&sanctioned_address.abi_encode())
+            .write_slice(&concatenated.abi_encode())
             .build()
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
+        let session = default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
+        println!("res {}", session.journal.decode());
     }
 }
