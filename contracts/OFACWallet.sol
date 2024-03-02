@@ -23,17 +23,17 @@ import {ImageID} from "./ImageID.sol"; // auto-generated contract after running 
 /// @notice This basic application holds a number, guaranteed to be even.
 /// @dev This contract demonstrates one pattern for offloading the computation of an expensive
 ///      or difficult to implement function to a RISC Zero guest running on Bonsai.
-contract AMLWallet {
+contract OFACWallet {
     /// @notice RISC Zero verifier contract address.
     IRiscZeroVerifier public immutable verifier;
     /// @notice Image ID of the only zkVM binary to accept verification from.
     bytes32 public constant imageId = ImageID.IS_NOT_0FAC_SANCTIONED_ID;
 
     address public owner;
+    bytes32 public sanctionListHash;
 
-    // bytes32 public constant constOFACListHash = 0x123;
+    event FundsSent(address dest, uint value);
 
-    event FundsSent(address dest, uint256 value);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
@@ -41,19 +41,21 @@ contract AMLWallet {
     }
 
     /// @notice Initialize the contract, binding it to a specified RISC Zero verifier.
-    constructor(IRiscZeroVerifier _verifier) {
+    constructor(bytes32 memory _sanctionListHash, IRiscZeroVerifier _verifier) {
         verifier = _verifier;
         owner = msg.sender;
+        sanctionListHash = _sanctionListHash;
+
     }
 
+
+
     /// @notice Send dest ETH amount. Requires a RISC Zero proof that the dest is not an OFAC sanctioned address.
-    function transferFunds(address payable dest, uint256 amount, bytes32 postStateDigest, bytes calldata seal)
-        external
-        onlyOwner
-    {
+    function transferFunds(address payable dest, uint256 amount, bytes32 postStateDigest,
+     bytes calldata seal) external onlyOwner {
         require(address(this).balance >= amount, "Insufficient balance");
         // Construct the expected journal data. Verify will fail if journal does not match.
-        bytes memory journal = abi.encode(dest);
+        bytes memory journal = abi.encodePacked(dest, sanctionListHash);
         require(verifier.verify(seal, imageId, postStateDigest, sha256(journal)));
         dest.transfer(amount);
         emit FundsSent(dest, amount);

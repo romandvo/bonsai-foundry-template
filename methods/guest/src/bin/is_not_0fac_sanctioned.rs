@@ -13,9 +13,9 @@
 // limitations under the License.
 
 use std::io::Read;
+use alloy_primitives::{Address, hex::FromHex, FixedBytes};
+
 use alloy_sol_types::SolValue;
-// use core::Inputs;
-// use core::Outputs;
 use risc0_zkvm::{
     guest::env,
     sha::{Impl, Sha256},
@@ -68,9 +68,10 @@ fn main() {
         if found { break; }
     }
 
-    let is_0fac_sanctioned = if found { true } else { false };
+    let address = Address::from_hex(checked_address).unwrap();
 
-    env::commit_slice(&[is_0fac_sanctioned as u8]); // Cast bool to u8 and take a slice
+
+    env::commit_slice(address.abi_encode().as_slice());
     env::commit_slice(sha.as_bytes());
 
     // let out = Outputs {

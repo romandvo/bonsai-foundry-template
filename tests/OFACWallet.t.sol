@@ -20,33 +20,31 @@ import {RiscZeroCheats} from "risc0/RiscZeroCheats.sol";
 import {console2} from "forge-std/console2.sol";
 import {Test} from "forge-std/Test.sol";
 import {IRiscZeroVerifier} from "risc0/IRiscZeroVerifier.sol";
-import {EvenNumber} from "../contracts/EvenNumber.sol";
+import {OFACWallet} from "../contracts/OFACWallet.sol";
 import {Elf} from "./Elf.sol"; // auto-generated contract after running `cargo build`.
 
-contract EvenNumberTest is RiscZeroCheats, Test {
-    EvenNumber public evenNumber;
+contract OFACWalletTest is RiscZeroCheats, Test {
+    OFACWallet public ofacWallet;
+
+    event FundsSent(address dest, uint256 value);
 
     function setUp() public {
         IRiscZeroVerifier verifier = deployRiscZeroVerifier();
-        evenNumber = new EvenNumber(verifier);
-        assertEq(evenNumber.get(), 0);
+        ofacWallet = new OFACWallet(verifier);
+        assertEq(ofacWallet.owner(), address(this));
+        uint256 amount = 1 ether;
+        vm.deal(address(ofacWallet), amount);
+        assertEq(address(ofacWallet).balance, amount);
     }
 
-    function test_SetEven() public {
-        uint256 number = 12345678;
+    function test_SendToNotSanctioned() public {
+        address payable dest = payable(0x1111111111111111111111111111111111111111);
+        uint256 value = 0.1 ether;
         (bytes memory journal, bytes32 post_state_digest, bytes memory seal) =
-            prove(Elf.IS_EVEN_PATH, abi.encode(number));
+            prove(Elf.IS_NOT_0FAC_SANCTIONED_PATH, abi.encode(dest));
+        vm.expectEmit(true, true, false, true);
+        emit FundsSent(dest, value);
 
-        evenNumber.set(abi.decode(journal, (uint256)), post_state_digest, seal);
-        assertEq(evenNumber.get(), number);
-    }
-
-    function test_SetZero() public {
-        uint256 number = 0;
-        (bytes memory journal, bytes32 post_state_digest, bytes memory seal) =
-            prove(Elf.IS_EVEN_PATH, abi.encode(number));
-
-        evenNumber.set(abi.decode(journal, (uint256)), post_state_digest, seal);
-        assertEq(evenNumber.get(), number);
+        ofacWallet.transferFunds(abi.decode(journal, (address)), value, post_state_digest, seal);
     }
 }
