@@ -17,7 +17,7 @@ include!(concat!(env!("OUT_DIR"), "/methods.rs"));
 
 // use core::Inputs;
 // use core::Outputs;
-use risc0_zkvm::{default_prover, ExecutorEnv};
+// use risc0_zkvm::{default_prover, ExecutorEnv};
 
 
 #[cfg(test)]
