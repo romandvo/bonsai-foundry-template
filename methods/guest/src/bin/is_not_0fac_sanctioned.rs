@@ -68,10 +68,10 @@ fn main() {
         if found { break; }
     }
 
-    let address = Address::from_hex(checked_address).unwrap();
+    // let address = Address::from_hex(checked_address).unwrap();
 
 
-    env::commit_slice(address.abi_encode().as_slice());
+    env::commit_slice(checked_address.abi_encode().as_slice());
     env::commit_slice(sha.as_bytes());
 
     // let out = Outputs {
