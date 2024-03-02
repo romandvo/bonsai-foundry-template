@@ -1,4 +1,4 @@
-// Copyright 2023 RISC Zero, Inc.
+// Copyright 2024 RISC Zero, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,24 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::io::Read;
+use json::parse;
+use json_core::Inputs;
+use json_core::Outputs;
+use risc0_zkvm::{
+    guest::env,
+    sha::{Impl, Sha256},
+};
 
-use alloy_primitives::Address;
-use alloy_sol_types::SolValue;
-use risc0_zkvm::guest::env;
+use roxmltree::Document;
+use std::fs;
 
 fn main() {
-    // Read the input data for this application.
-    let mut input_bytes = Vec::<u8>::new();
-    env::stdin().read_to_end(&mut input_bytes).unwrap();
-    // Decode and parse the input
-    let address = <Address>::abi_decode(&input_bytes, true).unwrap();
+    let inputs: Inputs = env::read();
 
-    // Run the computation.
-    // In this case, asserting that the provided number is not sanctioned.
-    assert!(address.to_string() != "0x01e2919679362dFBC9ee1644Ba9C6da6D6245BB1", "address is sanctioned");
+    let ofac_list: String = inputs.ofac_list;
+    let checked_address: String = inputs.checked_address;
 
-    // Commit the journal that will be received by the application contract.
-    // Journal is encoded using Solidity ABI for easy decoding in the app contract.
-    env::commit_slice(address.abi_encode().as_slice());
+    let sha = *Impl::hash_bytes(&ofac_list.as_bytes());
+
+
+    let doc = Document::parse(&ofac_list).expect("Failed to parse XML");
+    let ns = "http://www.un.org/sanctions/1.0";
+
+    let mut found = false;
+
+    for dps in doc.descendants().filter(|n| n.has_tag_name(("DistinctParties", ns))) {
+        for dp in dps.descendants().filter(|n| n.has_tag_name(("DistinctParty", ns))) {
+            for p in dp.descendants().filter(|n| n.has_tag_name(("Profile", ns))) {
+                for feature in p.descendants().filter(|n| n.has_tag_name(("Feature", ns))) {
+                    // Find the VersionDetail element within each Feature
+                    let version_detail = feature.descendants().find(|n| n.has_tag_name(("VersionDetail", ns)));
+                    if let Some(version_detail) = version_detail {
+                        if version_detail.text().unwrap_or_default().trim() == checked_address {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if found { break; }
+            }
+            if found { break; }
+        }
+        if found { break; }
+    }
+
+    let proven_val = if found { true } else { false };
+    let out = Outputs {
+        is_0fac_sanctioned: proven_val,
+        ofac_list_hash: sha,
+    };
+    env::commit(&out);
 }
