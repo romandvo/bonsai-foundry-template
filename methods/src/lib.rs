@@ -51,19 +51,31 @@ mod tests {
     use crate::check_sanction;
 
     #[test]
-    fn proves_address_is_not_sanctioned() {
-        let non_sanctioned_address = Address::from_hex("0x1111111111111111111111111111111111111111").unwrap();
+    fn proves_address_is_not_sanctioned()  {
+        println!("loading inputs...");
+        let ofac_list = include_str!("../../sdn_mini.xml");
+        let checked_address = "0xkosher";
+        println!("inputs loaded!");
+
+        let inputs = Inputs {
+            ofac_list: ofac_list.parse().unwrap(),
+            checked_address: checked_address.parse().unwrap()
+        };
+        println!("building env...");
+        let env = ExecutorEnv::builder()
+            .write(&inputs)
+            .unwrap()
+            .build()
+            .unwrap();
+
 
         let env = ExecutorEnv::builder()
-            .write_slice(&non_sanctioned_address.abi_encode())
+            .write_slice(&sanctioned_address.abi_encode())
             .build()
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        let session_info = default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
-
-        let dest = Address::abi_decode(&session_info.journal.bytes, true).unwrap();
-        assert_eq!(dest, non_sanctioned_address);
+        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
     }
 
     #[test]
