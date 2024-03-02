@@ -52,7 +52,7 @@ contract OFACWalletTest is RiscZeroCheats, Test {
             // Since `journal` is a dynamically-sized bytes array, it has a length prefix.
             // The data starts at the 32 bytes offset due to this prefix.
             // `mload(add(journal, 32))` reads the first 20 bytes after this prefix, which is the address.
-            extractedAddress := mload(add(journal, 0x20))
+            extractedAddress := mload(add(journal, 40))
         }
 
         vm.expectEmit(true, true, false, true);
