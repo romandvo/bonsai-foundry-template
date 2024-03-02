@@ -15,39 +15,95 @@
 //! Generated crate containing the image ID and ELF binary of the build guest.
 include!(concat!(env!("OUT_DIR"), "/methods.rs"));
 
+use core::Inputs;
+use core::Outputs;
+use risc0_zkvm::{default_prover, ExecutorEnv};
+
+fn check_sanction(ofac_list: &str, checked_address: &str) -> Outputs {
+    let inputs = Inputs {
+        ofac_list: ofac_list.parse().unwrap(),
+        checked_address: checked_address.parse().unwrap()
+    };
+    println!("building env...");
+    let env = ExecutorEnv::builder()
+        .write(&inputs)
+        .unwrap()
+        .build()
+        .unwrap();
+
+    println!("creating prover...");
+    // Obtain the default prover.
+    let prover = default_prover();
+
+    println!("proving...");
+    // Produce a receipt by proving the specified ELF binary.
+    let receipt = prover.prove(env, IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
+    println!("proved!");
+
+    receipt.journal.decode().unwrap()
+}
+
 #[cfg(test)]
 mod tests {
-    use alloy_primitives::U256;
+    use alloy_primitives::{Address, hex::FromHex};
     use alloy_sol_types::SolValue;
     use risc0_zkvm::{default_executor, ExecutorEnv};
+    use crate::check_sanction;
 
     #[test]
-    fn proves_even_number() {
-        let even_number = U256::from(1304);
+    fn proves_address_is_not_sanctioned()  {
+        println!("loading inputs...");
+        let ofac_list = include_str!("../../sdn_mini.xml");
+        let checked_address = "0xkosher";
+        println!("inputs loaded!");
+
+        let inputs = Inputs {
+            ofac_list: ofac_list.parse().unwrap(),
+            checked_address: checked_address.parse().unwrap()
+        };
+        println!("building env...");
+        let env = ExecutorEnv::builder()
+            .write(&inputs)
+            .unwrap()
+            .build()
+            .unwrap();
+
 
         let env = ExecutorEnv::builder()
-            .write_slice(&even_number.abi_encode())
+            .write_slice(&sanctioned_address.abi_encode())
             .build()
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        let session_info = default_executor().execute(env, super::IS_EVEN_ELF).unwrap();
-
-        let x = U256::abi_decode(&session_info.journal.bytes, true).unwrap();
-        assert_eq!(x, even_number);
+        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "number is not even")]
-    fn rejects_odd_number() {
-        let odd_number = U256::from(75);
+    #[should_panic(expected = "address is sanctioned")]
+    fn rejects_sanctioned_address() {
+        println!("loading inputs...");
+        let ofac_list = include_str!("/home/ben/ethdenver/ofac-sanctioned-digital-currency-addresses/sdn_mini.xml");
+        let checked_address = "0xb04E030140b30C27bcdfaafFFA98C57d80eDa7B4";
+        println!("inputs loaded!");
+
+        let inputs = Inputs {
+            ofac_list: ofac_list.parse().unwrap(),
+            checked_address: checked_address.parse().unwrap()
+        };
+        println!("building env...");
+        let env = ExecutorEnv::builder()
+            .write(&inputs)
+            .unwrap()
+            .build()
+            .unwrap();
+
 
         let env = ExecutorEnv::builder()
-            .write_slice(&odd_number.abi_encode())
+            .write_slice(&sanctioned_address.abi_encode())
             .build()
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        default_executor().execute(env, super::IS_EVEN_ELF).unwrap();
+        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
     }
 }
