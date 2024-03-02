@@ -48,10 +48,19 @@ fn main() {
 
     let mut found = false;
 
+    let collected: Vec<_> = doc.descendants().collect();
+    for d in &collected
+    {
+        println!("{:?} - {}", d, d.has_tag_name("{http://www.un.org/sanctions/1.0}DistinctParties") )
+
+    }
+
     for dps in doc.descendants().filter(|n| n.has_tag_name(("DistinctParties", ns))) {
+
         for dp in dps.descendants().filter(|n| n.has_tag_name(("DistinctParty", ns))) {
             for p in dp.descendants().filter(|n| n.has_tag_name(("Profile", ns))) {
                 for feature in p.descendants().filter(|n| n.has_tag_name(("Feature", ns))) {
+
                     // Find the VersionDetail element within each Feature
                     let version_detail = feature.descendants().find(|n| n.has_tag_name(("VersionDetail", ns)));
                     if let Some(version_detail) = version_detail {
