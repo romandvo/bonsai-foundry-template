@@ -15,40 +15,16 @@
 //! Generated crate containing the image ID and ELF binary of the build guest.
 include!(concat!(env!("OUT_DIR"), "/methods.rs"));
 
-use core::Inputs;
-use core::Outputs;
+// use core::Inputs;
+// use core::Outputs;
 use risc0_zkvm::{default_prover, ExecutorEnv};
 
-fn check_sanction(ofac_list: &str, checked_address: &str) -> Outputs {
-    let inputs = Inputs {
-        ofac_list: ofac_list.parse().unwrap(),
-        checked_address: checked_address.parse().unwrap()
-    };
-    println!("building env...");
-    let env = ExecutorEnv::builder()
-        .write(&inputs)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    println!("creating prover...");
-    // Obtain the default prover.
-    let prover = default_prover();
-
-    println!("proving...");
-    // Produce a receipt by proving the specified ELF binary.
-    let receipt = prover.prove(env, IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
-    println!("proved!");
-
-    receipt.journal.decode().unwrap()
-}
 
 #[cfg(test)]
 mod tests {
     use alloy_primitives::{Address, hex::FromHex};
     use alloy_sol_types::SolValue;
     use risc0_zkvm::{default_executor, ExecutorEnv};
-    use crate::check_sanction;
 
     #[test]
     fn proves_address_is_not_sanctioned()  {
