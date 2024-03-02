@@ -41,7 +41,7 @@ contract OFACWallet {
     }
 
     /// @notice Initialize the contract, binding it to a specified RISC Zero verifier.
-    constructor(bytes32 memory _sanctionListHash, IRiscZeroVerifier _verifier) {
+    constructor(bytes32 _sanctionListHash, IRiscZeroVerifier _verifier) {
         verifier = _verifier;
         owner = msg.sender;
         sanctionListHash = _sanctionListHash;
