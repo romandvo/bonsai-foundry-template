@@ -68,6 +68,9 @@ fn main() {
         if found { break; }
     }
 
+    assert!(found == false, "The addres is sanctioned!");
+
+
     // let address = Address::from_hex(checked_address).unwrap();
 
 
