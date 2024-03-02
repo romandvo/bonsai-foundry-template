@@ -33,8 +33,7 @@ contract AMLWallet {
 
     // bytes32 public constant constOFACListHash = 0x123;
 
-    event FundsSent(address dest, uint value);
-
+    event FundsSent(address dest, uint256 value);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
@@ -47,11 +46,11 @@ contract AMLWallet {
         owner = msg.sender;
     }
 
-
-
     /// @notice Send dest ETH amount. Requires a RISC Zero proof that the dest is not an OFAC sanctioned address.
-    function transferFunds(address payable dest, uint256 amount, bytes32 postStateDigest,
-     bytes calldata seal) external onlyOwner {
+    function transferFunds(address payable dest, uint256 amount, bytes32 postStateDigest, bytes calldata seal)
+        external
+        onlyOwner
+    {
         require(address(this).balance >= amount, "Insufficient balance");
         // Construct the expected journal data. Verify will fail if journal does not match.
         bytes memory journal = abi.encode(dest);

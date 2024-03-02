@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use json::parse;
-use json_core::Inputs;
-use json_core::Outputs;
+use core::Inputs;
+use core::Outputs;
 use risc0_zkvm::{
     guest::env,
     sha::{Impl, Sha256},
 };
 
 use roxmltree::Document;
-use std::fs;
 
 fn main() {
     let inputs: Inputs = env::read();

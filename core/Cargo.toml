@@ -1,8 +1,8 @@
 [package]
-name = "is-0fac-sanctioned-core"
+name = "core"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-risc0-zkvm = { path = "../../../risc0/zkvm", default-features = false }
+risc0-zkvm = { version = "0.20", default-features = false }
 serde = "1.0"

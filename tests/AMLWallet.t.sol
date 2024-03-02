@@ -23,12 +23,10 @@ import {IRiscZeroVerifier} from "risc0/IRiscZeroVerifier.sol";
 import {AMLWallet} from "../contracts/AMLWallet.sol";
 import {Elf} from "./Elf.sol"; // auto-generated contract after running `cargo build`.
 
-
 contract AMLWalletTest is RiscZeroCheats, Test {
     AMLWallet public amlWallet;
-    
-    event FundsSent(address dest, uint value);
 
+    event FundsSent(address dest, uint256 value);
 
     function setUp() public {
         IRiscZeroVerifier verifier = deployRiscZeroVerifier();
@@ -49,6 +47,4 @@ contract AMLWalletTest is RiscZeroCheats, Test {
 
         amlWallet.transferFunds(abi.decode(journal, (address)), value, post_state_digest, seal);
     }
-
-
 }

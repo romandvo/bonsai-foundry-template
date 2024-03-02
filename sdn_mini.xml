@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Sanctions xmlns="http://www.un.org/sanctions/1.0" Version="3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.un.org/sanctions/1.0 http://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.xsd">
+  <DistinctParties>
+    <DistinctParty FixedRef="39818">
+      <Comment />
+      <Profile ID="39816" PartySubTypeID="3">
+        <Feature ID="56359" FeatureTypeID="345">
+          <FeatureVersion ID="54038" ReliabilityID="1">
+            <Comment />
+            <VersionDetail DetailTypeID="1432">0xb04E030140b30C27bcdfaafFFA98C57d80eDa7B4</VersionDetail>
+          </FeatureVersion>
+          <IdentityReference IdentityID="31420" IdentityFeatureLinkTypeID="1" />
+        </Feature>
+      </Profile>
+    </DistinctParty>
+  </DistinctParties>
+</Sanctions>
