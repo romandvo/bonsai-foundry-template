@@ -57,7 +57,7 @@ mod tests {
 
         println!("building env...");
         let env = ExecutorEnv::builder()
-            .write_slice(&concatenated.abi_encode())
+            .write_slice(concatenated.into_bytes().as_slice())
             .build()
             .unwrap();
 
