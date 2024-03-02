@@ -22,7 +22,7 @@ include!(concat!(env!("OUT_DIR"), "/methods.rs"));
 
 #[cfg(test)]
 mod tests {
-    use alloy_primitives::{Address, hex::FromHex};
+    // use alloy_primitives::{Address, hex::FromHex};
     use alloy_sol_types::SolValue;
     use risc0_zkvm::{default_executor, ExecutorEnv};
 
@@ -42,15 +42,14 @@ mod tests {
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        let session = default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
-        println!("res {}", session.journal.decode());
+        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
     }
 
     #[test]
     #[should_panic(expected = "address is sanctioned")]
     fn rejects_sanctioned_address() {
         println!("loading inputs...");
-        let ofac_list = include_str!("/home/ben/ethdenver/ofac-sanctioned-digital-currency-addresses/sdn_mini.xml");
+        let ofac_list = include_str!("../../sdn_mini.xml");
         let checked_address = "0xb04E030140b30C27bcdfaafFFA98C57d80eDa7B4";
         println!("inputs loaded!");
 
@@ -63,7 +62,6 @@ mod tests {
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        let session = default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
-        println!("res {}", session.journal.decode());
+        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
     }
 }
