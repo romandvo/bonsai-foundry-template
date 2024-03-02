@@ -30,7 +30,7 @@ mod tests {
     fn proves_address_is_not_sanctioned()  {
         println!("loading inputs...");
         let ofac_list = include_str!("../../sdn_mini.xml");
-        let checked_address = "0xkosher";
+        let checked_address = "0xkosheraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
         println!("inputs loaded!");
 
         let concatenated = format!("{}{}", checked_address, ofac_list);
