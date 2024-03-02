@@ -28,12 +28,13 @@ fn main() {
     let mut input_bytes = Vec::<u8>::new();
     env::stdin().read_to_end(&mut input_bytes).unwrap();
     // Decode and parse the input
-    // 42 bytes of checked_address || [42, ...] - ofac xml
+    // ffi/src/main.rs strips the first 0x, so we expect 40 chars instead of 42
+    // 40 bytes of checked_address || [40, ...] - ofac xml
     let raw_data = String::abi_decode(&input_bytes, true).unwrap();
-    // Assuming the first 42 bytes are ASCII/UTF-8 encoded characters for the address
-    let checked_address = &raw_data[..42];
+    // Assuming the first 40 bytes are ASCII/UTF-8 encoded characters for the address
+    let checked_address = &raw_data[..40];
     // Convert the remainder of the input_bytes to a UTF-8 String
-    let ofac_list = &raw_data[42..];
+    let ofac_list = &raw_data[40..];
 
     // let inputs: Inputs = env::read();
     //
