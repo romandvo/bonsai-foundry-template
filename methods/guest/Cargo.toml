@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "is-even"
-path = "src/bin/is_even.rs"
+name = "is-not-0fac-sanctioned"
+path = "src/bin/is_not_0fac_sanctioned.rs"
 
 [workspace]
 

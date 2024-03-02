@@ -17,37 +17,37 @@ include!(concat!(env!("OUT_DIR"), "/methods.rs"));
 
 #[cfg(test)]
 mod tests {
-    use alloy_primitives::U256;
+    use alloy_primitives::{Address, hex::FromHex};
     use alloy_sol_types::SolValue;
     use risc0_zkvm::{default_executor, ExecutorEnv};
 
     #[test]
-    fn proves_even_number() {
-        let even_number = U256::from(1304);
+    fn proves_address_is_not_sanctioned() {
+        let non_sanctioned_address = Address::from_hex("0x1111111111111111111111111111111111111111").unwrap();
 
         let env = ExecutorEnv::builder()
-            .write_slice(&even_number.abi_encode())
+            .write_slice(&non_sanctioned_address.abi_encode())
             .build()
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        let session_info = default_executor().execute(env, super::IS_EVEN_ELF).unwrap();
+        let session_info = default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
 
-        let x = U256::abi_decode(&session_info.journal.bytes, true).unwrap();
-        assert_eq!(x, even_number);
+        let dest = Address::abi_decode(&session_info.journal.bytes, true).unwrap();
+        assert_eq!(dest, non_sanctioned_address);
     }
 
     #[test]
-    #[should_panic(expected = "number is not even")]
-    fn rejects_odd_number() {
-        let odd_number = U256::from(75);
+    #[should_panic(expected = "address is sanctioned")]
+    fn rejects_sanctioned_address() {
+        let sanctioned_address = Address::from_hex("0x01e2919679362dFBC9ee1644Ba9C6da6D6245BB1").unwrap();
 
         let env = ExecutorEnv::builder()
-            .write_slice(&odd_number.abi_encode())
+            .write_slice(&sanctioned_address.abi_encode())
             .build()
             .unwrap();
 
         // NOTE: Use the executor to run tests without proving.
-        default_executor().execute(env, super::IS_EVEN_ELF).unwrap();
+        default_executor().execute(env, super::IS_NOT_0FAC_SANCTIONED_ELF).unwrap();
     }
 }

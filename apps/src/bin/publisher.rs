@@ -16,17 +16,18 @@
 // to the Bonsai proving service and publish the received proofs directly
 // to your deployed app contract.
 
+use alloy_primitives::Address;
 use alloy_primitives::U256;
 use alloy_sol_types::{sol, SolInterface, SolValue};
 use anyhow::{Context, Result};
 use apps::{BonsaiProver, TxSender};
 use clap::Parser;
-use methods::IS_EVEN_ELF;
+use methods::IS_NOT_0FAC_SANCTIONED_ELF;
 
-// `IEvenNumber` interface automatically generated via the alloy `sol!` macro.
+// `IAMLWallet` interface automatically generated via the alloy `sol!` macro.
 sol! {
-    interface IEvenNumber {
-        function set(uint256 x, bytes32 post_state_digest, bytes calldata seal);
+    interface IAMLWallet {
+        function transferFunds(address payable dest, uint256 amount, bytes32 post_state_digest, bytes calldata seal);
     }
 }
 
@@ -52,7 +53,7 @@ struct Args {
 
     /// The input to provide to the guest binary
     #[clap(short, long)]
-    input: U256,
+    input: Address,
 }
 
 fn main() -> Result<()> {
@@ -67,20 +68,22 @@ fn main() -> Result<()> {
         &args.contract,
     )?;
 
-    // ABI encode the input for the guest binary, to match what the `is_even` guest
+    // ABI encode the input for the guest binary, to match what the `is_not_0fac_sanctioned` guest
     // code expects.
     let input = args.input.abi_encode();
 
     // Send an off-chain proof request to the Bonsai proving service.
-    let (journal, post_state_digest, seal) = BonsaiProver::prove(IS_EVEN_ELF, &input)?;
+    let (journal, post_state_digest, seal) = BonsaiProver::prove(IS_NOT_0FAC_SANCTIONED_ELF, &input)?;
 
     // Decode the journal. Must match what was written in the guest with
     // `env::commit_slice`.
-    let x = U256::abi_decode(&journal, true).context("decoding journal data")?;
+    let dest = Address::abi_decode(&journal, true).context("decoding journal data")?;
+    let amount =  U256::from(1);
 
-    // Encode the function call for `IEvenNumber.set(x)`.
-    let calldata = IEvenNumber::IEvenNumberCalls::set(IEvenNumber::setCall {
-        x,
+    // Encode the function call for `IAMLWallet.transferFunds(dest, amount)`.
+    let calldata = IAMLWallet::IAMLWalletCalls::transferFunds(IAMLWallet::transferFundsCall {
+        dest,
+        amount,
         post_state_digest,
         seal,
     })
