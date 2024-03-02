@@ -44,7 +44,7 @@ contract OFACWalletTest is RiscZeroCheats, Test {
         uint256 value = 0.1 ether;
         bytes memory fileContent = bytes(vm.toString(abi.encodePacked(vm.readFile("./sdn_mini.xml"))));
         (bytes memory journal, bytes32 post_state_digest, bytes memory seal) =
-            prove(Elf.IS_NOT_0FAC_SANCTIONED_PATH, abi.encodePacked(dest, fileContent));
+            prove(Elf.IS_NOT_0FAC_SANCTIONED_PATH, abi.encode(dest, fileContent));
     
         address payable extractedAddress;
         assembly {

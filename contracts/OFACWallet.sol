@@ -55,7 +55,7 @@ contract OFACWallet {
      bytes calldata seal) external onlyOwner {
         require(address(this).balance >= amount, "Insufficient balance");
         // Construct the expected journal data. Verify will fail if journal does not match.
-        bytes memory journal = abi.encodePacked(dest, sanctionListHash);
+        bytes memory journal = abi.encode(dest, sanctionListHash);
         require(verifier.verify(seal, imageId, postStateDigest, sha256(journal)));
         dest.transfer(amount);
         emit FundsSent(dest, amount);
