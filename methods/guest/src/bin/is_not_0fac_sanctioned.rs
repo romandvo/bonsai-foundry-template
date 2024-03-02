@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use std::io::Read;
-use alloy_primitives::{Address, hex::FromHex, FixedBytes};
+// use alloy_primitives::{Address, hex::FromHex, FixedBytes};
 
 use alloy_sol_types::SolValue;
 use risc0_zkvm::{
@@ -45,7 +45,7 @@ fn main() {
 
 
     let doc = Document::parse(&ofac_list).expect("Failed to parse XML");
-    let ns = "http://www.un.org/sanctions/1.0";
+    // let ns = "http://www.un.org/sanctions/1.0";
 
     let mut found = false;
 
@@ -56,7 +56,7 @@ fn main() {
                     // Find the VersionDetail element within each Feature
                     let version_detail = feature.descendants().find(|n| n.has_tag_name("VersionDetail"));
                     if let Some(version_detail) = version_detail {
-                        if version_detail.text().unwrap_or_default().trim() == checked_address {
+                        if version_detail.text().unwrap_or_default().trim().strip_prefix("0x").unwrap() == checked_address {
                             found = true;
                             break;
                         }
